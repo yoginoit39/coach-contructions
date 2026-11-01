@@ -103,15 +103,15 @@ function Piece({ progress, index, at, range, color = WALL, children, rotY = 0, g
     const settle = seg(p, range[1], range[1] + 0.08);
     edge.current.color.copy(base).lerp(WHITE_C, 1 - settle * 0.55);
     if (emissive) edge.current.color.lerp(warm, lit);
-    edge.current.opacity = (0.35 + 0.65 * t) * (1 - settle * 0.4);
-    if (pane.current) pane.current.opacity = lit * 0.72;
+    edge.current.opacity = (0.35 + 0.65 * t) * (1 - settle * 0.55);
+    if (pane.current) pane.current.opacity = lit * 0.3;
   });
 
   return (
     <mesh ref={mesh} position={at}>
       {children}
       {glass ? (
-        <meshBasicMaterial ref={pane} color="#f1c98a" transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} />
+        <meshBasicMaterial ref={pane} color="#ffb866" transparent opacity={0} depthWrite={false} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} />
       ) : (
         <meshBasicMaterial colorWrite={false} polygonOffset polygonOffsetFactor={0} polygonOffsetUnits={3} />
       )}
@@ -680,8 +680,9 @@ function Rig({ progress, mouse }: { progress: Progress; mouse: Mouse }) {
     // letters phase needs less back-off than the full site
     const portraitRaw = THREE.MathUtils.clamp(1.3 / aspect, 1, 2.8);
     const portrait = 1 + (portraitRaw - 1) * (0.55 + 0.45 * far);
-    const r = (36 + mapTilt * 14 + far * 47 - s * 8) * portrait * (1 - dolly * 0.05);
-    const h = (10 + mapTilt * 18 + far * 26 + Math.sin(s * Math.PI) * 3 - s * 7) * (1 + (portrait - 1) * 0.5) * (1 - dolly * 0.08) + my * -1.4;
+    const push = portraitRaw > 1.05 ? 0.06 : 0.07; // finale dolly: gentle on portrait so the skyline stays in frame
+    const r = (36 + mapTilt * 14 + far * 47 - s * 8) * portrait * (1 - dolly * push);
+    const h = (10 + mapTilt * 18 + far * 26 + Math.sin(s * Math.PI) * 3 - s * 7) * (1 + (portrait - 1) * 0.5) * (1 - dolly * push * 0.9) + my * -1.4;
     camera.position.set(Math.sin(a) * r, h, Math.cos(a) * r + 3);
     const shiftX = portraitRaw > 1.05 ? 0 : -2.5 * far; // landscape: slide the city right so the stage copy sits clear of it
     target.set(shiftX, 4.6 + far * 5 - s * 2 - (portrait - 1) * 1.6, -2 + s * 2);
@@ -696,10 +697,10 @@ function Rig({ progress, mouse }: { progress: Progress; mouse: Mouse }) {
 export default function Scene({ progress, mouse, lite = false, active = true }: { progress: Progress; mouse: Mouse; lite?: boolean; active?: boolean }) {
   return (
     <Canvas
-      dpr={lite ? 1 : [1, 1.25]}
+      dpr={lite ? [1, 2] : [1, 1.5]}
       frameloop={active ? "always" : "never"}
       camera={{ fov: 34, near: 0.1, far: 260, position: [0, 7, 26] }}
-      gl={{ antialias: !lite, alpha: false, powerPreference: "high-performance" }}
+      gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
     >
       <color attach="background" args={[BG]} />
       <KeyLight />
