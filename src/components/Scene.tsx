@@ -11,7 +11,6 @@ type Mouse = RefObject<{ x: number; y: number }>;
 
 /* ---------- palette (Pool Villa, Wakiso) ---------- */
 const WALL = "#cfc7b2";
-const STONE = "#6e6b66";
 const TILE = "#b4553a";
 const TRIM = "#efe9dc";
 const GLASS = "#7f9199";
@@ -186,110 +185,7 @@ export function Villa({ progress, at = [0, 0, 0], scale = 1, shift = 0 }: { prog
   );
 }
 
-/* ---------- the skyline: six Coach projects on one plot ---------- */
-const BRICKRED = "#8a4a3a";
-const RENDER = "#cfc7b2";
-const WHITE = "#ece8de";
-
-function City({ progress }: { progress: Progress }) {
-  const gable = useMemo(() => hipRoof(3.4, 6.2, 1.4, 3.3), []);
-  const pieces = useMemo(() => {
-    const out: P[] = [];
-    const push = (p: P) => out.push(p);
-    const win = (x: number, y: number, z: number, w: number, h: number, ry: number, r0: number) => {
-      // split anything wider than 2.6 into panes with a mullion gap, so floors read as windows not slabs
-      const cols = Math.max(1, Math.round(w / 2.2));
-      const cw = (w - (cols - 1) * 0.35) / cols;
-      for (let c = 0; c < cols; c++) {
-        const off = -w / 2 + cw / 2 + c * (cw + 0.35);
-        const px = ry ? x : x + off;
-        const pz = ry ? z + off : z;
-        push({ at: [px, y, pz], range: [r0, r0 + 0.06], color: GLASS, glass: true, emissive: true, rotY: ry, litAt: (px + 24) / 48 + ((((y * 7.3 + c) % 1) + 1) % 1) * 0.12, children: <boxGeometry args={[cw, h, 0.06]} /> });
-      }
-    };
-
-
-    // Crescent Apartments: 7 stepped floors, left back
-    {
-      const X = -17, Z = -10, F = 3;
-      push({ at: [X, 0.2, Z], range: [0.08, 0.16], color: CONCRETE, children: <boxGeometry args={[13, 0.4, 11]} /> });
-      for (let i = 0; i < 7; i++) {
-        const r0 = 0.2 + i * 0.055;
-        const dx = Math.sin(i * 0.9) * 1.1;
-        push({ at: [X + dx, 0.4 + i * F + F / 2 - 0.15, Z], range: [r0, r0 + 0.07], color: WHITE, children: <boxGeometry args={[10, F - 0.3, 8]} /> });
-        push({ at: [X + dx, 0.4 + i * F + F - 0.1, Z], range: [r0 + 0.03, r0 + 0.09], color: WHITE, children: <boxGeometry args={[11.4, 0.22, 9.2]} /> });
-        win(X + dx, 0.4 + i * F + F / 2 - 0.15, Z + 4.03, 9.2, F - 1, 0, 0.72 + i * 0.012);
-        win(X + dx + 5.03, 0.4 + i * F + F / 2 - 0.15, Z, 7.2, F - 1, Math.PI / 2, 0.73 + i * 0.012);
-      }
-      push({ at: [X, 0.4 + 7 * F + 0.4, Z], range: [0.62, 0.7], color: "#3a3f3e", children: <boxGeometry args={[6, 0.8, 5]} /> });
-    }
-
-    // Mukwano offices: brick, 3 floors, right back
-    {
-      const X = 15, Z = -11, F = 3.4;
-      push({ at: [X, 0.2, Z], range: [0.1, 0.18], color: CONCRETE, children: <boxGeometry args={[15, 0.4, 12]} /> });
-      for (let i = 0; i < 3; i++) {
-        const r0 = 0.24 + i * 0.09;
-        push({ at: [X, 0.4 + i * F + F / 2, Z], range: [r0, r0 + 0.08], color: BRICKRED, grow: true, height: F, children: <boxGeometry args={[13, F, 10]} /> });
-        push({ at: [X, 0.4 + (i + 1) * F, Z], range: [r0 + 0.04, r0 + 0.1], color: CONCRETE, children: <boxGeometry args={[13.6, 0.25, 10.6]} /> });
-        for (let k = 0; k < 4; k++) win(X - 4.5 + k * 3, 0.4 + i * F + F / 2, Z + 5.03, 2.2, 1.8, 0, 0.76 + i * 0.012 + k * 0.004);
-      }
-      push({ at: [X, 0.4 + F + 0.1, Z + 7.5], range: [0.6, 0.68], color: "#3a3f3e", children: <boxGeometry args={[9, 0.2, 5]} /> });
-      push({ at: [X - 3.5, 0.4 + F / 2, Z + 9.5], range: [0.58, 0.64], color: "#3a3f3e", grow: true, height: F, children: <boxGeometry args={[0.2, F, 0.2]} /> });
-      push({ at: [X + 3.5, 0.4 + F / 2, Z + 9.5], range: [0.58, 0.64], color: "#3a3f3e", grow: true, height: F, children: <boxGeometry args={[0.2, F, 0.2]} /> });
-    }
-
-    // Apartment tower: 7 floors with balconies, centre back
-    {
-      const X = -2, Z = -17, F = 3;
-      push({ at: [X, 0.2, Z], range: [0.09, 0.17], color: CONCRETE, children: <boxGeometry args={[11, 0.4, 11]} /> });
-      push({ at: [X, 0.4 + F / 2, Z], range: [0.22, 0.3], color: STONE, grow: true, height: F, children: <boxGeometry args={[9, F, 9]} /> });
-      for (let i = 1; i < 7; i++) {
-        const r0 = 0.28 + i * 0.065;
-        push({ at: [X, 0.4 + i * F + F / 2, Z], range: [r0, r0 + 0.07], color: RENDER, grow: true, height: F, children: <boxGeometry args={[9, F, 9]} /> });
-        push({ at: [X, 0.4 + i * F + 0.1, Z + 5], range: [r0 + 0.03, r0 + 0.09], color: WHITE, children: <boxGeometry args={[9.6, 0.2, 1.6]} /> });
-        win(X, 0.4 + i * F + F / 2, Z + 4.53, 7.5, F - 1, 0, 0.78 + i * 0.01);
-      }
-      push({ at: [X, 0.4 + 7 * F + 0.15, Z], range: [0.74, 0.8], color: WHITE, children: <boxGeometry args={[10, 0.3, 10]} /> });
-    }
-
-    // KURB food court: long shop row with canopy and sign, right front
-    {
-      const X = 17, Z = 9;
-      push({ at: [X, 0.2, Z], range: [0.12, 0.2], color: CONCRETE, children: <boxGeometry args={[20, 0.4, 9]} /> });
-      push({ at: [X, 0.4 + 1.8, Z], range: [0.34, 0.44], color: "#2b2b2a", grow: true, height: 3.6, children: <boxGeometry args={[18, 3.6, 6]} /> });
-      push({ at: [X, 0.4 + 3.75, Z + 1.5], range: [0.46, 0.54], color: "#3a3f3e", children: <boxGeometry args={[19, 0.3, 10]} /> });
-      push({ at: [X, 0.4 + 4.6, Z - 1], range: [0.56, 0.62], color: WHITE, children: <boxGeometry args={[8, 1.4, 0.3]} /> });
-      for (let k = 0; k < 6; k++) win(X - 7.5 + k * 3, 0.4 + 1.7, Z + 3.03, 2.4, 2.6, 0, 0.8 + k * 0.006);
-    }
-
-    // Townhouses: four gabled units, left front
-    {
-      const Z = 10;
-      for (let k = 0; k < 4; k++) {
-        const X = -21 + k * 3.6;
-        const r0 = 0.3 + k * 0.05;
-        push({ at: [X, 0.2, Z], range: [0.11 + k * 0.01, 0.19 + k * 0.01], color: CONCRETE, children: <boxGeometry args={[3.5, 0.4, 7]} /> });
-        push({ at: [X, 0.4 + 2.6, Z], range: [r0, r0 + 0.08], color: k % 2 ? RENDER : BRICKRED, grow: true, height: 5.2, children: <boxGeometry args={[3.3, 5.2, 6.2]} /> });
-        push({ at: [X, 0.4 + 5.2, Z], range: [r0 + 0.3, r0 + 0.37], color: TILE, flat: true, children: <primitive object={gable} attach="geometry" /> });
-        win(X, 0.4 + 1.5, Z + 3.13, 1.4, 2.2, 0, 0.82 + k * 0.006);
-        win(X, 0.4 + 4, Z + 3.13, 1.8, 1.4, 0, 0.83 + k * 0.006);
-      }
-    }
-    return out;
-  }, [gable]);
-
-  return (
-    <group>
-      <Roads progress={progress} />
-      {pieces.map((p, i) => (
-        <Piece key={i} index={i} progress={progress} {...p} />
-      ))}
-    </group>
-  );
-}
-
-/* roads: faint flat strips that fade in with the survey, no edges */
+/* ---------- roads: faint flat strips that fade in with the survey ---------- */
 function Roads({ progress }: { progress: Progress }) {
   const a = useRef<THREE.MeshBasicMaterial>(null!);
   const b = useRef<THREE.MeshBasicMaterial>(null!);
@@ -313,9 +209,15 @@ function Roads({ progress }: { progress: Progress }) {
   );
 }
 
-/* ---------- Uganda in bricks: the map lies on the plot, Kampala pinned, then scatters into the build ---------- */
-const BRICK = 0.62;
+/* ---------- Uganda in bricks → the skyline in the same bricks ----------
+ * One InstancedMesh. Every brick has a tile on the map and a slot in a
+ * building. Scroll lerps each brick from the one to the other, course by
+ * course, nearest-Kampala tiles leaving first. */
+const MAPB = 0.42; // map tile size
 const MAP_W = 24; // world units across the country
+const MAP_ROT = -2.2; // the map faces the opening camera angle so north is up on screen
+const BW = 1.0, BH = 0.5, BD = 0.5; // building brick
+const FLY = 0.07; // progress a brick spends in the air
 const KAMPALA: [number, number] = [32.5825, 0.3476];
 const LAKE: [number, number][] = [
   [31.72, 0.23], [32.0, 0.4], [32.45, 0.38], [32.62, 0.22], [32.9, 0.3], [33.2, 0.2], [33.4, 0.0], [33.5, -0.5], [33.3, -1.0], [32.6, -1.3], [31.9, -1.1], [31.6, -0.6], [31.6, -0.2],
@@ -328,24 +230,151 @@ const pointIn = (x: number, y: number, poly: [number, number][]) => {
   }
   return inside;
 };
+const hash = (k: number) => ((Math.sin(k * 12.9898 + 78.233) * 43758.5453) % 1 + 1) % 1;
 
-function Letters({ progress, mouse }: { progress: Progress; mouse: Mouse }) {
+type Cell = { x: number; y: number; z: number; sx: number; sy: number; sz: number; ry: number; t: number; c: THREE.Color };
+type Pane = { x: number; y: number; z: number; ry: number; litAt: number };
+
+/** Lay out every building as brick cells + window panes. */
+function layout() {
+  const cells: Cell[] = [];
+  const panes: Pane[] = [];
+  const brick = new THREE.Color(TILE);
+  const slabC = new THREE.Color("#746f67");
+  let n = 0;
+  const colour = (k: number) => brick.clone().offsetHSL(0, (hash(k) - 0.5) * 0.08, (hash(k + 1) - 0.5) * 0.1);
+
+  // one straight wall: bricks along (x0,z0)→(x1,z1), `courses` high from y0
+  const wall = (x0: number, z0: number, x1: number, z1: number, y0: number, courses: number, t0: number, dt: number, F: number, windows: boolean) => {
+    const L = Math.hypot(x1 - x0, z1 - z0);
+    const k = Math.max(1, Math.round(L / BW));
+    const ux = (x1 - x0) / L, uz = (z1 - z0) / L;
+    const ry = Math.atan2(ux, uz) - Math.PI / 2;
+    for (let c = 0; c < courses; c++) {
+      const fc = c % F;
+      const winCourse = windows && fc >= 1 && fc <= 2;
+      const stag = winCourse ? 0 : (c % 2) * 0.5;
+      for (let i = 0; i < k; i++) {
+        const a = ((i + 0.5 + stag) / k) * L;
+        if (a > L) continue;
+        const isWin = winCourse && i % 2 === 1 && i > 0 && i < k - 1;
+        const x = x0 + ux * a, z = z0 + uz * a, y = y0 + c * BH + BH / 2;
+        if (isWin) {
+          if (fc === 1) panes.push({ x, y: y + BH / 2, z, ry, litAt: THREE.MathUtils.clamp((x + 24) / 48 + hash(n * 3) * 0.14, 0, 1) });
+          continue;
+        }
+        // courses go up in order; bricks along a course arrive left→right with a little jitter
+        cells.push({ x, y, z, sx: BW, sy: BH, sz: BD, ry, t: t0 + c * dt + (i / k) * dt * 0.8 + hash(n * 7) * dt * 0.4, c: colour(n) });
+        n++;
+      }
+    }
+  };
+
+  // hollow box: four walls, optional slab on top
+  const box = (cx: number, cz: number, w: number, d: number, y0: number, courses: number, t0: number, dt: number, F: number, windows: boolean) => {
+    const hw = w / 2, hd = d / 2;
+    wall(cx - hw, cz + hd, cx + hw, cz + hd, y0, courses, t0, dt, F, windows); // front
+    wall(cx + hw, cz - hd, cx - hw, cz - hd, y0, courses, t0, dt, F, false); // back
+    wall(cx + hw - BD, cz + hd - BD, cx + hw - BD, cz - hd + BD, y0, courses, t0, dt, F, windows); // right
+    wall(cx - hw + BD, cz - hd + BD, cx - hw + BD, cz + hd - BD, y0, courses, t0, dt, F, false); // left
+  };
+  const slab = (cx: number, y: number, cz: number, w: number, d: number, t: number) => {
+    cells.push({ x: cx, y, z: cz, sx: w, sy: 0.16, sz: d, ry: 0, t, c: slabC });
+    n++;
+  };
+
+  // Crescent Apartments: 7 stepped floors, left back
+  {
+    const X = -17, Z = -10, F = 4;
+    slab(X, 0.1, Z, 12, 10, 0.1);
+    for (let f = 0; f < 7; f++) {
+      const dx = Math.sin(f * 0.9) * 1.1;
+      const t0 = 0.16 + f * 0.085;
+      box(X + dx, Z, 10, 8, 0.2 + f * F * BH, F, t0, 0.018, F, true);
+      slab(X + dx, 0.2 + (f + 1) * F * BH + 0.1, Z, 11, 9, t0 + 0.085);
+    }
+  }
+  // Apartment tower: 7 floors, centre back
+  {
+    const X = -2, Z = -17, F = 4;
+    slab(X, 0.1, Z, 11, 11, 0.11);
+    for (let f = 0; f < 7; f++) {
+      const t0 = 0.2 + f * 0.085;
+      box(X, Z, 9, 9, 0.2 + f * F * BH, F, t0, 0.018, F, true);
+      slab(X, 0.2 + (f + 1) * F * BH + 0.1, Z + 0.4, 9.8, 10.6, t0 + 0.085);
+    }
+  }
+  // Mukwano offices: 3 tall floors, right back
+  {
+    const X = 15, Z = -11, F = 5;
+    slab(X, 0.1, Z, 15, 12, 0.12);
+    for (let f = 0; f < 3; f++) {
+      const t0 = 0.26 + f * 0.13;
+      box(X, Z, 13, 10, 0.2 + f * F * BH, F, t0, 0.024, F, true);
+      slab(X, 0.2 + (f + 1) * F * BH + 0.1, Z, 13.8, 10.8, t0 + 0.13);
+    }
+  }
+  // KURB food court: long low shop row with a canopy, right front
+  {
+    const X = 17, Z = 9, F = 6;
+    slab(X, 0.1, Z, 20, 9, 0.13);
+    box(X, Z, 18, 6, 0.2, F, 0.36, 0.03, F, true);
+    slab(X, 0.2 + F * BH + 0.1, Z + 1.5, 19, 10, 0.56);
+  }
+  // Townhouses: four units, left front
+  for (let k = 0; k < 4; k++) {
+    const X = -21 + k * 3.6, Z = 10, F = 4;
+    slab(X, 0.1, Z, 3.6, 7, 0.14 + k * 0.01);
+    for (let f = 0; f < 2; f++) {
+      const t0 = 0.4 + k * 0.03 + f * 0.09;
+      box(X, Z, 3.4, 6.4, 0.2 + f * F * BH, F, t0, 0.02, F, true);
+    }
+    slab(X, 0.2 + 2 * F * BH + 0.1, Z, 3.8, 6.8, 0.62 + k * 0.03);
+  }
+  // Pool Villa: house + garage wing, front centre; the pool comes separately
+  {
+    const X = 1, Z = 5, F = 4;
+    slab(X, 0.1, Z, 9, 7, 0.15);
+    for (let f = 0; f < 2; f++) {
+      const t0 = 0.5 + f * 0.1;
+      box(X, Z, 7, 5, 0.2 + f * F * BH, F, t0, 0.022, F, true);
+      slab(X, 0.2 + (f + 1) * F * BH + 0.1, Z + 0.6, 8.2, 6.6, t0 + 0.1);
+    }
+    box(X - 5, Z + 0.5, 3, 4, 0.2, F, 0.58, 0.024, F, false);
+    slab(X - 5, 0.2 + F * BH + 0.1, Z + 0.5, 3.6, 4.6, 0.7);
+  }
+  cells.sort((a, b) => a.t - b.t);
+  return { cells, panes };
+}
+
+function Bricks({ progress }: { progress: Progress }) {
   const inst = useRef<THREE.InstancedMesh>(null!);
+  const glass = useRef<THREE.InstancedMesh>(null!);
   const water = useRef<THREE.InstancedMesh>(null!);
-  const group = useRef<THREE.Group>(null!);
   const pin = useRef<THREE.Group>(null!);
   const ring = useRef<THREE.Mesh>(null!);
+  const borderMat = useRef<THREE.LineBasicMaterial>(null!);
   const dummy = useMemo(() => new THREE.Object3D(), []);
+  const tmpC = useMemo(() => new THREE.Color(), []);
+  const warm = useMemo(() => new THREE.Color("#ffb866"), []);
+  const last = useRef(-1);
+  const litLast = useRef(-2);
 
   const data = useMemo(() => {
     const poly = outline as [number, number][];
     const xs = poly.map((p) => p[0]), ys = poly.map((p) => p[1]);
     const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
     const k = MAP_W / (maxX - minX);
-    const toW = (lon: number, lat: number): [number, number] => [(lon - (minX + maxX) / 2) * k, -(lat - (minY + maxY) / 2) * k];
-    const land: { x: number; z: number; sx: number; sy: number; sz: number; d: number }[] = [];
+    const cos = Math.cos(MAP_ROT), sin = Math.sin(MAP_ROT);
+    // map coords, rotated into world so the country reads north-up from the opening camera
+    const toW = (lon: number, lat: number): [number, number] => {
+      const x = (lon - (minX + maxX) / 2) * k, z = -(lat - (minY + maxY) / 2) * k;
+      return [x * cos + z * sin, -x * sin + z * cos];
+    };
+    const [kx, kz] = toW(KAMPALA[0], KAMPALA[1]);
+    const tiles: { x: number; z: number; d: number }[] = [];
     const lake: { x: number; z: number }[] = [];
-    const step = BRICK * 1.02;
+    const step = MAPB * 1.04;
     let i = 0;
     for (let lon = minX; lon <= maxX; lon += step / k)
       for (let lat = minY; lat <= maxY; lat += step / k) {
@@ -355,71 +384,91 @@ function Letters({ progress, mouse }: { progress: Progress; mouse: Mouse }) {
           lake.push({ x, z });
           continue;
         }
-        const s = Math.sin(i * 7.31) * 1000;
-        const rnd = (q: number) => (((s * (q + 1)) % 1) + 1) % 1;
-        // bricks near Kampala leave first: the city rises from the capital
-        const [kx, kz] = toW(KAMPALA[0], KAMPALA[1]);
-        const dist = Math.hypot(x - kx, z - kz) / (MAP_W * 0.6);
-        land.push({ x, z, sx: (rnd(0) - 0.5) * 36, sy: 8 + rnd(1) * 18, sz: (rnd(2) - 0.5) * 36, d: THREE.MathUtils.clamp(dist * 0.8 + rnd(3) * 0.2, 0, 1) });
-        i++;
+        tiles.push({ x, z, d: Math.hypot(x - kx, z - kz) + hash(i++) * 2.5 });
       }
+    tiles.sort((a, b) => a.d - b.d);
+    const { cells, panes } = layout();
+    // more bricks than tiles: the tiles nearest Kampala stack a second layer, top brick leaves first
+    const extra = Math.max(0, cells.length - tiles.length);
+    const slots: { x: number; y: number; z: number }[] = [];
+    tiles.forEach((t, j) => {
+      if (j < extra) slots.push({ x: t.x, y: MAPB * 1.5, z: t.z });
+      slots.push({ x: t.x, y: MAPB / 2, z: t.z });
+    });
+    const bricks = cells.map((c, j) => {
+      const s = slots[j % slots.length];
+      return { ...c, mx: s.x, my: s.y, mz: s.z, arc: 5 + hash(j * 5) * 7, spin: (hash(j * 11) - 0.5) * 6 };
+    });
     const border = poly.map(([lon, lat]) => {
       const [x, z] = toW(lon, lat);
       return new THREE.Vector3(x, 0.08, z);
     });
     border.push(border[0].clone());
-    const kam = toW(KAMPALA[0], KAMPALA[1]);
-    return { land, lake, border: new THREE.BufferGeometry().setFromPoints(border), kam };
+    return { bricks, panes, lake, border: new THREE.BufferGeometry().setFromPoints(border), kam: [kx, kz] as [number, number] };
   }, []);
 
   useFrame(({ clock }) => {
     const p = progress.current ?? 0;
-    const mx = mouse.current?.x ?? 0, my = mouse.current?.y ?? 0;
-    // camera opens at angle -2.2 rad; rotate the map to match so north is straight up on screen
-    group.current.rotation.y = -2.2 + mx * 0.12;
-    group.current.rotation.x = my * 0.04;
-    const tAll = seg(p, 0.02, 0.16);
-    const breathe = Math.sin(clock.elapsedTime * 0.8) * 0.03;
-    data.land.forEach((c, i) => {
-      const t = easeInOut(seg(tAll, c.d * 0.55, c.d * 0.55 + 0.45));
-      const lift = (1 - t) * Math.sin(clock.elapsedTime * 1.4 + c.x * 0.3 + c.z * 0.2) * 0.05;
-      dummy.position.set(c.x + c.sx * t, BRICK / 2 + breathe + lift + c.sy * t, c.z + c.sz * t);
-      dummy.rotation.set(t * 2.5 * (c.d - 0.5), t * 3 * c.d, t * 1.5);
-      dummy.scale.setScalar(Math.max(0.0001, (1 - t) * BRICK * 0.94));
-      dummy.updateMatrix();
-      inst.current.setMatrixAt(i, dummy.matrix);
-    });
-    inst.current.instanceMatrix.needsUpdate = true;
-    const wt = 1 - easeInOut(seg(tAll, 0.3, 0.8));
+    const tAll = seg(p, 0.02, 0.2);
+    // bricks: only re-pack the matrices while something is actually moving
+    if (Math.abs(p - last.current) > 1e-5) {
+      last.current = p;
+      data.bricks.forEach((b, i) => {
+        const f = easeInOut(seg(p, b.t, b.t + FLY));
+        const air = Math.sin(f * Math.PI);
+        dummy.position.set(THREE.MathUtils.lerp(b.mx, b.x, f), THREE.MathUtils.lerp(b.my, b.y, f) + air * b.arc, THREE.MathUtils.lerp(b.mz, b.z, f));
+        dummy.rotation.set(air * b.spin * 0.5, b.ry * f + air * b.spin, air * b.spin * 0.3);
+        dummy.scale.set(THREE.MathUtils.lerp(MAPB * 0.94, b.sx * 0.96, f), THREE.MathUtils.lerp(MAPB * 0.94, b.sy * 0.92, f), THREE.MathUtils.lerp(MAPB * 0.94, b.sz * 0.96, f));
+        dummy.updateMatrix();
+        inst.current.setMatrixAt(i, dummy.matrix);
+      });
+      inst.current.instanceMatrix.needsUpdate = true;
+    }
+    // panes: black (invisible, additive) until the lights-on finale
+    const ft = finaleT();
+    if (ft !== litLast.current) {
+      litLast.current = ft;
+      data.panes.forEach((w, i) => {
+        const lit = ft < 0 ? 0 : flick(ft - (0.7 + w.litAt * 1.9));
+        glass.current.setColorAt(i, tmpC.copy(warm).multiplyScalar(lit * 0.6));
+      });
+      if (glass.current.instanceColor) glass.current.instanceColor.needsUpdate = true;
+    }
+    // lake drains, border and pin fade as the bricks leave
+    const wt = 1 - easeInOut(seg(tAll, 0.25, 0.75));
     data.lake.forEach((c, i) => {
-      dummy.position.set(c.x, 0.12 + Math.sin(clock.elapsedTime * 1.2 + c.x * 0.5) * 0.03, c.z);
+      dummy.position.set(c.x, 0.1 + Math.sin(clock.elapsedTime * 1.2 + c.x * 0.5) * 0.03, c.z);
       dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(BRICK * 0.98 * wt, 0.12 * wt, BRICK * 0.98 * wt);
+      dummy.scale.set(MAPB * 0.98 * wt, 0.1 * wt, MAPB * 0.98 * wt);
       dummy.updateMatrix();
       water.current.setMatrixAt(i, dummy.matrix);
     });
     water.current.instanceMatrix.needsUpdate = true;
-    // pin pulses, then lifts off with the bricks
+    water.current.visible = wt > 0.001;
+    borderMat.current.opacity = 1 - easeInOut(seg(tAll, 0.4, 0.9));
     const pulse = 1 + Math.sin(clock.elapsedTime * 3) * 0.08;
     pin.current.scale.setScalar(pulse * (1 - easeInOut(seg(tAll, 0, 0.3))));
     const r = (clock.elapsedTime * 0.7) % 1;
     ring.current.scale.setScalar(1 + r * 4);
     (ring.current.material as THREE.MeshBasicMaterial).opacity = (1 - r) * 0.6 * (1 - seg(tAll, 0, 0.25));
-    group.current.visible = tAll < 0.999;
   });
 
   return (
-    <group ref={group} position={[0, 0, 0]}>
-      <instancedMesh ref={inst} args={[undefined, undefined, data.land.length]}>
+    <group>
+      <instancedMesh ref={inst} args={[undefined, undefined, data.bricks.length]} onUpdate={(m) => data.bricks.forEach((b, i) => m.setColorAt(i, b.c))}>
         <boxGeometry args={[1, 1, 1]} />
-        <meshStandardMaterial color={TILE} roughness={0.9} />
+        <meshStandardMaterial color="#ffffff" roughness={0.92} />
+      </instancedMesh>
+      <instancedMesh ref={glass} args={[undefined, undefined, Math.max(1, data.panes.length)]} onUpdate={(m) => { data.panes.forEach((w, i) => { dummy.position.set(w.x, w.y, w.z); dummy.rotation.set(0, w.ry, 0); dummy.scale.set(BW * 0.9, BH * 1.8, 0.08); dummy.updateMatrix(); m.setMatrixAt(i, dummy.matrix); m.setColorAt(i, tmpC.set(0x000000)); }); m.instanceMatrix.needsUpdate = true; }}>
+        <boxGeometry args={[1, 1, 1]} />
+        <meshBasicMaterial color="#ffffff" transparent depthWrite={false} blending={THREE.AdditiveBlending} fog={false} />
       </instancedMesh>
       <instancedMesh ref={water} args={[undefined, undefined, Math.max(1, data.lake.length)]}>
         <boxGeometry args={[1, 1, 1]} />
         <meshStandardMaterial color={WATER} roughness={0.2} metalness={0.3} />
       </instancedMesh>
-      <primitive object={new THREE.Line(data.border, new THREE.LineBasicMaterial({ color: GREEN }))} />
-      <group ref={pin} position={[data.kam[0], BRICK + 0.2, data.kam[1]]}>
+      <primitive object={new THREE.Line(data.border, new THREE.LineBasicMaterial({ color: GREEN, transparent: true }))} onUpdate={(l: THREE.Line) => (borderMat.current = l.material as THREE.LineBasicMaterial)} />
+      <group ref={pin} position={[data.kam[0], MAPB + 0.2, data.kam[1]]}>
         <mesh position={[0, 1.1, 0]}>
           <cylinderGeometry args={[0.04, 0.04, 2.2, 6]} />
           <meshBasicMaterial color={GREEN} />
@@ -711,11 +760,10 @@ export default function Scene({ progress, mouse, lite = false, active = true }: 
       </mesh>
       <Grid args={[80, 80]} cellSize={1} cellThickness={0.5} cellColor="#1a2726" sectionSize={5} sectionThickness={1} sectionColor="#2b3d3a" fadeDistance={50} fadeStrength={1.4} position={[0, 0, 0]} />
       <Pegs progress={progress} />
-      <Letters progress={progress} mouse={mouse} />
+      <Roads progress={progress} />
+      <Bricks progress={progress} />
       <Crane progress={progress} at={[-8, 0, -4]} phase={0} rise={0.05} />
       <Crane progress={progress} at={[9, 0, -3]} phase={2.2} rise={0.1} />
-      <City progress={progress} />
-      <Villa progress={progress} at={[2, 0, 6]} scale={0.5} shift={0.06} />
       <Water progress={progress} />
       <Scan progress={progress} />
       <Dust progress={progress} count={lite ? 350 : 900} />
